@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Movie {
+  id                Int       @id @default(autoincrement())
+  tmdb_id           Int       @unique
+  title             String
+  release_date      DateTime?
+  budget            BigInt?
+  runtime           Int?
+  mpaa_rating       String?
+  genres            String[]
+  studio            String?
+  franchise         String?
+  tmdb_poster_path  String?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  metadata     MovieMetadata?
+  grosses      Gross[]
+  weeklyCharts WeeklyChart[]
+  records      Record[]
+  predictions  Prediction[]
+
+  @@index([release_date])
+  @@index([tmdb_id])
+}
+
+model MovieMetadata {
+  movie_id         Int      @id
+  director         String?
+  cast             String[]
+  rt_score         Int?
+  metacritic_score Int?
+  imdb_rating      Float?
+  awards           String?
+  updated_at       DateTime @updatedAt
+
+  movie Movie @relation(fields: [movie_id], references: [id])
+}
+
+model Gross {
+  id                  Int      @id @default(autoincrement())
+  movie_id            Int
+  week_date           DateTime
+  rank                Int
+  weekend_gross       BigInt?
+  domestic_cumulative BigInt?
+  worldwide_gross     BigInt?
+  theaters            Int?
+  weeks_in_release    Int?
+
+  movie Movie @relation(fields: [movie_id], references: [id])
+
+  @@unique([movie_id, week_date])
+  @@index([week_date, rank])
+  @@index([movie_id])
+}
+
+model WeeklyChart {
+  id               Int      @id @default(autoincrement())
+  chart_date       DateTime
+  rank             Int
+  movie_id         Int
+  weekend_gross    BigInt?
+  gross_change_pct Float?
+  cumulative_gross BigInt?
+  theaters         Int?
+  weeks_in_release Int?
+
+  movie Movie @relation(fields: [movie_id], references: [id])
+
+  @@unique([chart_date, rank])
+  @@index([chart_date])
+}
+
+model Record {
+  id            Int      @id @default(autoincrement())
+  category      String
+  movie_id      Int
+  value         BigInt
+  description   String
+  achieved_date DateTime
+  is_all_time   Boolean  @default(false)
+  context       String?
+
+  movie Movie @relation(fields: [movie_id], references: [id])
+
+  @@index([category])
+}
+
+model Trivia {
+  id         Int      @id @default(autoincrement())
+  question   String
+  answer     String
+  category   String?
+  difficulty String?
+  movie_id   Int?
+  year       Int?
+  created_at DateTime @default(now())
+}
+
+model Prediction {
+  id               Int       @id @default(autoincrement())
+  session_id       String
+  username         String?
+  movie_id         Int
+  predicted_opening BigInt
+  submitted_at     DateTime  @default(now())
+  actual_opening   BigInt?
+  accuracy_pct     Float?
+  resolved_at      DateTime?
+
+  movie Movie @relation(fields: [movie_id], references: [id])
+
+  @@index([movie_id])
+}
+
+model PredictionScore {
+  id                  Int      @id @default(autoincrement())
+  session_id          String   @unique
+  username            String?
+  total_predictions   Int      @default(0)
+  avg_accuracy_pct    Float    @default(0)
+  best_accuracy_pct   Float    @default(0)
+  updated_at          DateTime @updatedAt
+}

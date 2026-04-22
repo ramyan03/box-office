@@ -1,0 +1,18 @@
+{
+  "name": "box-office",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "web": "npm run dev --workspace=apps/web",
+    "api": "npm run dev --workspace=packages/api"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg text-white antialiased;
+  }
+
+  /* Tabular numbers for all gross/number displays */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
