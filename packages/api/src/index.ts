@@ -16,6 +16,10 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 4000;
 
 app.use(cors({ origin: process.env.CORS_ORIGIN ?? "*" }));
 app.use(express.json());
+// Prisma returns BigInt for money columns — convert to Number for JSON
+app.set("json replacer", (_key: string, value: unknown) =>
+  typeof value === "bigint" ? Number(value) : value
+);
 
 app.get("/health", (_req, res) => {
   res.json({

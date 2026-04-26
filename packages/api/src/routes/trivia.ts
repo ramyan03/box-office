@@ -58,20 +58,28 @@ router.get("/categories", async (_req, res) => {
   return res.json(result.map((r) => r.category).filter(Boolean));
 });
 
+function shuffle<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 function formatQuestion(q: {
   id: number;
   question: string;
   answer: string;
+  wrong_options: string[];
   category: string | null;
   difficulty: string | null;
   movie_id: number | null;
   year: number | null;
 }) {
-  // In a real app, wrong options would be stored in DB or generated
   return {
     id: q.id,
     question: q.question,
-    options: [q.answer], // TODO: add wrong options to DB schema
+    options: shuffle([...q.wrong_options, q.answer]),
     answer: q.answer,
     category: q.category ?? "general",
     difficulty: q.difficulty ?? "medium",

@@ -96,14 +96,15 @@ model Record {
 }
 
 model Trivia {
-  id         Int      @id @default(autoincrement())
-  question   String
-  answer     String
-  category   String?
-  difficulty String?
-  movie_id   Int?
-  year       Int?
-  created_at DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  question     String
+  answer       String
+  wrong_options String[] @default([])
+  category     String?
+  difficulty   String?
+  movie_id     Int?
+  year         Int?
+  created_at   DateTime @default(now())
 }
 
 model Prediction {
