@@ -114,36 +114,44 @@ router.get("/yearly/:year", async (req, res) => {
   };
 
   const rows = await prisma.$queryRaw<Row[]>`
+    WITH first_chart AS (
+      SELECT movie_id, MIN(chart_date) AS first_date
+      FROM "WeeklyChart"
+      GROUP BY movie_id
+    )
     SELECT
-      m.id                                                        AS movie_id,
+      m.id                                                              AS movie_id,
       m.title,
       m.studio,
       m.release_date,
       m.budget,
       m.tmdb_poster_path,
-      MAX(CASE WHEN wc.weeks_in_release = 1 THEN wc.weekend_gross END)  AS opening_weekend,
-      MAX(wc.cumulative_gross)                                    AS domestic_total,
+      MAX(CASE WHEN wc.weeks_in_release = 1 THEN wc.weekend_gross END) AS opening_weekend,
+      MAX(wc.cumulative_gross)                                          AS domestic_total,
       CASE
         WHEN m.budget > 0
         THEN ROUND((MAX(wc.cumulative_gross)::numeric / m.budget::numeric), 2)
-      END                                                         AS roi
+      END                                                               AS roi
     FROM "Movie" m
     JOIN "WeeklyChart" wc ON wc.movie_id = m.id
-    WHERE EXTRACT(YEAR FROM (
-      SELECT MIN(wc2.chart_date) FROM "WeeklyChart" wc2 WHERE wc2.movie_id = m.id
-    )) = ${year}
+    JOIN first_chart fc ON fc.movie_id = m.id
+    WHERE EXTRACT(YEAR FROM fc.first_date) = ${year}
     GROUP BY m.id, m.title, m.studio, m.release_date, m.budget, m.tmdb_poster_path
     ORDER BY ${orderBy}
     LIMIT ${limit} OFFSET ${offset}
   `;
 
   const countResult = await prisma.$queryRaw<[{ count: bigint }]>`
+    WITH first_chart AS (
+      SELECT movie_id, MIN(chart_date) AS first_date
+      FROM "WeeklyChart"
+      GROUP BY movie_id
+    )
     SELECT COUNT(DISTINCT m.id) AS count
     FROM "Movie" m
     JOIN "WeeklyChart" wc ON wc.movie_id = m.id
-    WHERE EXTRACT(YEAR FROM (
-      SELECT MIN(wc2.chart_date) FROM "WeeklyChart" wc2 WHERE wc2.movie_id = m.id
-    )) = ${year}
+    JOIN first_chart fc ON fc.movie_id = m.id
+    WHERE EXTRACT(YEAR FROM fc.first_date) = ${year}
   `;
 
   return res.json({

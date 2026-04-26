@@ -3,6 +3,10 @@
     {
       "source": "/api/v1/:path*",
       "destination": "https://box-office-production.up.railway.app/v1/:path*"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 }
