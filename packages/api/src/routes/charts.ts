@@ -99,7 +99,7 @@ router.get("/yearly/:year", async (req, res) => {
     budget:  Prisma.sql`budget DESC NULLS LAST`,
     roi:     Prisma.sql`roi DESC NULLS LAST`,
   };
-  const orderBy = VALID_SORTS[sort] ?? VALID_SORTS.gross;
+  const orderBy = VALID_SORTS[sort as keyof typeof VALID_SORTS] ?? VALID_SORTS.gross;
 
   type Row = {
     movie_id: number;
