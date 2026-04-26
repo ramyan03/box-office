@@ -4,8 +4,18 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatGross, formatDate } from "../lib/format";
 
+const CATEGORY_LABELS: Record<string, string> = {
+  opening_weekend: "Opening Weekend",
+  domestic_total: "Domestic Gross",
+  best_single_weekend: "Best Single Weekend",
+  best_second_weekend: "Best 2nd Weekend",
+  best_non_opening: "Best Non-Opening",
+  best_legs: "Best Legs",
+  most_weeks_no1: "Most Weeks at #1",
+};
+
 export default function Records() {
-  const [category, setCategory] = useState<string>("");
+  const [category, setCategory] = useState<string>("opening_weekend");
 
   const { data: categories } = useQuery({
     queryKey: ["records", "categories"],
@@ -18,31 +28,27 @@ export default function Records() {
     queryFn: () => api.records.all(category || undefined),
   });
 
+  const formatValue = (record: { category: string; value: number }) => {
+    if (record.category === "most_weeks_no1") return `${record.value} wks`;
+    return formatGross(record.value);
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-white">Records & Milestones</h1>
 
-      {/* Category filter */}
       <div className="flex gap-2 flex-wrap">
-        <button
-          onClick={() => setCategory("")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-            !category ? "bg-gold text-black" : "bg-surface text-neutral hover:text-white border border-white/10"
-          }`}
-        >
-          All
-        </button>
         {categories?.map((cat) => (
           <button
             key={cat}
             onClick={() => setCategory(cat)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors capitalize ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               category === cat
                 ? "bg-gold text-black"
                 : "bg-surface text-neutral hover:text-white border border-white/10"
             }`}
           >
-            {cat.replace(/_/g, " ")}
+            {CATEGORY_LABELS[cat] ?? cat.replace(/_/g, " ")}
           </button>
         ))}
       </div>
@@ -66,12 +72,11 @@ export default function Records() {
               <div>
                 <p className="text-white font-semibold">{record.title}</p>
                 <p className="text-neutral text-sm mt-0.5">{record.description}</p>
-                {record.context && (
-                  <p className="text-neutral text-xs mt-1 italic">{record.context}</p>
-                )}
               </div>
               <div className="text-right shrink-0">
-                <p className="text-gold font-bold text-lg tabular">{formatGross(record.value)}</p>
+                <p className="text-gold font-bold text-lg tabular">
+                  {formatValue(record)}
+                </p>
                 <p className="text-neutral text-xs">{formatDate(record.achieved_date)}</p>
                 {record.is_all_time && (
                   <span className="text-[10px] bg-gold/10 text-gold px-2 py-0.5 rounded-full font-semibold">

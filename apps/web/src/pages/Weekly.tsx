@@ -4,6 +4,12 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatGross, formatChange, formatDate } from "../lib/format";
 
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 export default function Weekly() {
   const [date, setDate] = useState<string>("");
 
@@ -12,16 +18,44 @@ export default function Weekly() {
     queryFn: () => date ? api.charts.weekly(date) : api.charts.latest(),
   });
 
+  const currentDate = chart?.chart_date
+    ? new Date(chart.chart_date).toISOString().slice(0, 10)
+    : null;
+
+  const goToPrev = () => {
+    if (currentDate) setDate(addDays(currentDate, -7));
+  };
+
+  const goToNext = () => {
+    if (currentDate) setDate(addDays(currentDate, 7));
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-white">Weekly Results</h1>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="bg-surface border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-gold/50"
-        />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goToPrev}
+            disabled={!currentDate}
+            className="px-3 py-1.5 rounded-lg text-sm bg-surface border border-white/10 text-neutral hover:text-white disabled:opacity-40 transition-colors"
+          >
+            ← Prev
+          </button>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="bg-surface border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-gold/50"
+          />
+          <button
+            onClick={goToNext}
+            disabled={!currentDate}
+            className="px-3 py-1.5 rounded-lg text-sm bg-surface border border-white/10 text-neutral hover:text-white disabled:opacity-40 transition-colors"
+          >
+            Next →
+          </button>
+        </div>
       </div>
 
       {chart && (
@@ -74,11 +108,9 @@ export default function Weekly() {
                 {formatGross(entry.weekend_gross)}
               </p>
               {entry.gross_change_pct != null && (
-                <p
-                  className={`text-xs tabular font-medium ${
-                    entry.gross_change_pct >= 0 ? "text-positive" : "text-negative"
-                  }`}
-                >
+                <p className={`text-xs tabular font-medium ${
+                  entry.gross_change_pct >= 0 ? "text-positive" : "text-negative"
+                }`}>
                   {formatChange(entry.gross_change_pct)}
                 </p>
               )}

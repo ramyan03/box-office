@@ -79,7 +79,6 @@ export default function Yearly() {
               <th className="px-4 py-3 text-left">Film</th>
               <th className="px-4 py-3 text-right hidden md:table-cell">Opening</th>
               <th className="px-4 py-3 text-right">Domestic</th>
-              <th className="px-4 py-3 text-right hidden lg:table-cell">Worldwide</th>
               <th className="px-4 py-3 text-right hidden lg:table-cell">ROI</th>
             </tr>
           </thead>
@@ -91,9 +90,18 @@ export default function Yearly() {
               >
                 <td className="px-4 py-3 text-neutral tabular">{i + 1}</td>
                 <td className="px-4 py-3">
-                  <Link to={`/movie/${entry.movie_id}`} className="hover:text-gold transition-colors">
-                    <p className="text-white font-medium">{entry.title}</p>
-                    <p className="text-neutral text-xs">{entry.studio ?? ""} · {formatDate(entry.release_date)}</p>
+                  <Link to={`/movie/${entry.movie_id}`} className="flex items-center gap-3 hover:text-gold transition-colors">
+                    {entry.poster_url && (
+                      <img
+                        src={entry.poster_url}
+                        alt={entry.title}
+                        className="w-8 h-12 object-cover rounded shrink-0 hidden sm:block"
+                      />
+                    )}
+                    <div>
+                      <p className="text-white font-medium">{entry.title}</p>
+                      <p className="text-neutral text-xs">{entry.studio ?? ""}{entry.studio && entry.release_date ? " · " : ""}{formatDate(entry.release_date)}</p>
+                    </div>
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-right tabular text-neutral hidden md:table-cell">
@@ -101,9 +109,6 @@ export default function Yearly() {
                 </td>
                 <td className="px-4 py-3 text-right tabular text-white font-semibold">
                   {formatGross(entry.domestic_total)}
-                </td>
-                <td className="px-4 py-3 text-right tabular text-neutral hidden lg:table-cell">
-                  {formatGross(entry.worldwide_total)}
                 </td>
                 <td className="px-4 py-3 text-right tabular hidden lg:table-cell">
                   <span className={entry.roi != null && entry.roi >= 1 ? "text-positive" : "text-negative"}>
