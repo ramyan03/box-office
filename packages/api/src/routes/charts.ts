@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { cacheGet, cacheSet } from "../lib/cache";
 
 const router = Router();
@@ -92,7 +93,7 @@ router.get("/yearly/:year", async (req, res) => {
   const page = parseInt(req.query.page as string) || 1;
   const offset = (page - 1) * limit;
 
-  const VALID_SORTS: Record<string, Prisma.Sql> = {
+  const VALID_SORTS = {
     gross:   Prisma.sql`domestic_total DESC NULLS LAST`,
     opening: Prisma.sql`opening_weekend DESC NULLS LAST`,
     budget:  Prisma.sql`budget DESC NULLS LAST`,

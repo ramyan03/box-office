@@ -13,7 +13,7 @@ async function tmdbGet<T>(path: string, params?: Record<string, string>): Promis
   if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   const res = await fetch(url.toString());
   if (!res.ok) throw new Error(`TMDB ${res.status} — ${path}`);
-  return res.json();
+  return (await res.json()) as T;
 }
 
 export function posterUrl(path: string | null, size = "w300"): string | null {
